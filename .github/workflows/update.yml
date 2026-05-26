@@ -1,0 +1,38 @@
+name: IPTV Auto Update
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Merge playlists
+        run: python scripts/merge.py
+
+      - name: Check live streams
+        run: python scripts/stream_checker.py
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'iptv-bot'
+          git config --global user.email 'bot@example.com'
+
+          git add .
+          git commit -m 'Auto IPTV update' || echo 'No changes'
+
+          git push
